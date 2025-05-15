@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='jin_utils',
-    version='0.1',
+    version='0.2',
     author='Huaqing Jin',
     author_email='kevinjin0423@gmail.com',
     description='The package contains some useful functions for my daily work',

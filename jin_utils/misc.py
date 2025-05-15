@@ -132,8 +132,15 @@ def num2str(num, digits=3,
     return: 
         - strn (str): the string representation of the number
     """
+    if isinstance(num, bool):
+        return str(num)
+    if num is None:
+        return "None"
     if num == 0:
         return "0"
+    if isinstance(num, np.ndarray):
+        num = num.item()
+
 
     digits = int(digits)
     is_negative = num < 0
@@ -185,6 +192,12 @@ def num2str(num, digits=3,
 def str2num(s, dp="d", mp="m"): 
     """Given a string representation of a number, return the number
     """
+    if s == "None":
+        return None
+    if s == "True":
+        return True
+    if s == "False":
+        return False
     s = s.replace(dp, ".")
     s = s.replace(mp, "-")
     return float(s)
