@@ -1,9 +1,30 @@
+import os
 import numpy as np
-import pickle
 from easydict import EasyDict as edict
 import logging
-import os
 from pathlib import Path
+from copy import deepcopy
+
+
+
+
+def _init_logger(name=None):
+    """Initialize a logger
+    args: 
+        - name: str, the name of the logger
+    return: 
+        - logger: logging.Logger, the logger
+    """
+    name = name or __name__
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.DEBUG)
+    if not logger.hasHandlers():
+        ch = logging.StreamHandler() # for console. 
+        ch.setLevel(logging.DEBUG)
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        ch.setFormatter(formatter)
+        logger.addHandler(ch) 
+    return logger
 
 def get_mypkg_path(max_iter=5):
     """Find the mypkg folder under the current working directory 
@@ -15,7 +36,7 @@ def get_mypkg_path(max_iter=5):
 
     mypkg_path = None
     # find the mypkg folder under work_path
-    for i in range(max_iter):
+    for _ in range(max_iter):
         if (cur_path/"mypkg").exists():
             mypkg_path = cur_path/"mypkg"
             break
@@ -49,6 +70,7 @@ def _update_params(input_params, def_params, logger, check_ky=True):
         - logger (logging.Logger): the logger
         - check_ky (bool): whether to check the keys or not 
     """
+    def_params = deepcopy(def_params)
     for ky, v in input_params.items():
         if ky not in def_params.keys() and check_ky:
             logger.warning(f"Check your input, {ky} is not used.")
@@ -58,64 +80,6 @@ def _update_params(input_params, def_params, logger, check_ky=True):
     return edict(def_params)
 
 
-def load_pkl_folder2dict(folder, excluding=[], including=["*"], verbose=True):
-    """The function is to load pkl file in folder as an edict
-        args:
-            folder: the target folder
-            excluding: The files excluded from loading
-            including: The files included for loading
-            Note that excluding override including
-    """
-    if not isinstance(including, list):
-        including = [including]
-    if not isinstance(excluding, list):
-        excluding = [excluding]
-        
-    if len(including) == 0:
-        inc_fs = []
-    else:
-        inc_fs = list(set(np.concatenate([list(folder.glob(nam+".pkl")) for nam in including])))
-    if len(excluding) == 0:
-        exc_fs = []
-    else:
-        exc_fs = list(set(np.concatenate([list(folder.glob(nam+".pkl")) for nam in excluding])))
-    load_fs = np.setdiff1d(inc_fs, exc_fs)
-    res = edict()
-    for fil in load_fs:
-        res[fil.stem] = load_pkl(fil, verbose)                                                                                                                                  
-    return res
-
-# save a dict into a folder
-def save_pkl_dict2folder(folder, res, is_force=False, verbose=True):
-    assert isinstance(res, dict)
-    for ky, v in res.items():
-        save_pkl(folder/f"{ky}.pkl", v, is_force=is_force, verbose=verbose)
-
-# load file from pkl
-def load_pkl(fil, verbose=True):
-    if verbose:
-        print(f"Load file {fil}")
-    with open(fil, "rb") as f:
-        result = pickle.load(f)
-    return result
-
-# save file to pkl
-def save_pkl(fil, result, is_force=False, verbose=True):
-    if not fil.parent.exists():
-        fil.parent.mkdir()
-        if verbose:
-            print(fil.parent)
-            print(f"Create a folder {fil.parent}")
-    if is_force or (not fil.exists()):
-        if verbose:
-            print(f"Save to {fil}")
-        with open(fil, "wb") as f:
-            pickle.dump(result, f)
-    else:
-        if verbose:
-            print(f"{fil} exists! Use is_force=True to save it anyway")
-        else:
-            pass
 
         
 def num2str(num, digits=3,
