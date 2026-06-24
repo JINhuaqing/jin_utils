@@ -11,10 +11,12 @@ setup(
     zip_safe=False,
     install_requires=[
         'numpy>=1.18.0',
-        'pandas>=1.0.0', 
+        'pandas>=1.0.0',
         'easydict',
         'matplotlib',
-        'rpy2',
         'pyyaml',
-    ]
+    ],
+    extras_require={
+        'rpy2': ['rpy2'],
+    },
 )
